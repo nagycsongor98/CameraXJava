@@ -13,6 +13,9 @@ import androidx.camera.core.VideoCaptureConfig;
 import androidx.lifecycle.LifecycleOwner;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -38,12 +41,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        recording = isServiceRunning(this, RecordService.class);
+        updateSate(findViewById(R.id.saveButton), recording);
         Camera camera = Camera.camera;
 
         Preview preview = camera.getPreview();
 
-//        camera.bindLifecycle(this);
+        //camera.bindLifecycle(this);
+
+        //CameraX.bindToLifecycle(this, preview);
 
         TextureView textureView = findViewById(R.id.textureView);
 
@@ -85,16 +91,23 @@ public class MainActivity extends AppCompatActivity {
 //           }
 //
             if (recording) {
-                Intent intent = new Intent(MainActivity.this, RecordService.class);
-                stopService(intent);
+
+                //Intent intent = new Intent(MainActivity.this, RecordService.class);
+                sendBroadcast(new Intent("stop"));
                 recording = false;
+
             } else {
                 Intent intent = new Intent(MainActivity.this, RecordService.class);
                 startService(intent);
                 recording = true;
             }
+            updateSate(v, recording);
         });
 
+    }
+
+    void updateSate(View v, boolean recording) {
+        v.setBackgroundResource(recording? android.R.color.holo_red_dark: android.R.color.holo_green_dark);
     }
 
     @SuppressLint("RestrictedApi")
@@ -125,6 +138,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    public static boolean isServiceRunning(Context context, Class<? extends Service> serviceClass) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager != null) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (serviceClass.getName().equals(service.service.getClassName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 }

@@ -36,6 +36,7 @@ public class Camera {
                 .setLensFacing(CameraX.LensFacing.BACK)
                 .setTargetAspectRatio(Rational.POSITIVE_INFINITY)
                 .setTargetRotation(Surface.ROTATION_0)
+
                 .build();
 
         videoCapture = new VideoCapture(videoCaptureConfig);
@@ -52,6 +53,7 @@ public class Camera {
     }
 
     public void bindLifecycle(LifecycleOwner lifecycleOwner) {
+        //CameraX.unbindAll();
         CameraX.bindToLifecycle(lifecycleOwner, preview,videoCapture);
     }
 }
